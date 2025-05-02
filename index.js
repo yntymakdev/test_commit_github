@@ -1,76 +1,66 @@
 import jsonfile from "jsonfile";
 import moment from "moment";
 import simpleGit from "simple-git";
-import random from "random";
 
-const path = "./data.json";
-const git = simpleGit();
-
-// Буквы и их координаты (примерные дни для каждой буквы)
+// Словарь с датами для каждой буквы
 const letterDates = {
   Y: [
-    { x: 0, y: 0 },
-    { x: 1, y: 0 },
-    { x: 2, y: 1 },
-    { x: 3, y: 2 },
-    { x: 4, y: 3 },
+    moment().subtract(1, "year").add(1, "day").add(1, "weeks").add(1, "days").format(),
+    moment().subtract(1, "year").add(1, "day").add(1, "weeks").add(2, "days").format(),
+    moment().subtract(1, "year").add(1, "day").add(2, "weeks").add(2, "days").format(),
   ],
   N: [
-    { x: 0, y: 0 },
-    { x: 1, y: 1 },
-    { x: 2, y: 2 },
-    { x: 3, y: 3 },
+    moment().subtract(1, "year").add(1, "day").add(2, "weeks").add(1, "days").format(),
+    moment().subtract(1, "year").add(1, "day").add(3, "weeks").add(2, "days").format(),
+    moment().subtract(1, "year").add(1, "day").add(3, "weeks").add(3, "days").format(),
   ],
   T: [
-    { x: 0, y: 0 },
-    { x: 1, y: 0 },
-    { x: 2, y: 0 },
-    { x: 3, y: 1 },
-    { x: 4, y: 2 },
+    moment().subtract(1, "year").add(1, "day").add(2, "weeks").add(3, "days").format(),
+    moment().subtract(1, "year").add(1, "day").add(3, "weeks").add(4, "days").format(),
+  ],
+  Y2: [
+    moment().subtract(1, "year").add(1, "day").add(4, "weeks").add(1, "days").format(),
+    moment().subtract(1, "year").add(1, "day").add(4, "weeks").add(2, "days").format(),
   ],
   M: [
-    { x: 0, y: 0 },
-    { x: 1, y: 1 },
-    { x: 2, y: 2 },
-    { x: 3, y: 1 },
-    { x: 4, y: 0 },
+    moment().subtract(1, "year").add(1, "day").add(5, "weeks").add(1, "days").format(),
+    moment().subtract(1, "year").add(1, "day").add(5, "weeks").add(2, "days").format(),
   ],
   A: [
-    { x: 0, y: 0 },
-    { x: 1, y: 1 },
-    { x: 2, y: 2 },
-    { x: 3, y: 1 },
-    { x: 4, y: 0 },
+    moment().subtract(1, "year").add(1, "day").add(6, "weeks").add(1, "days").format(),
+    moment().subtract(1, "year").add(1, "day").add(6, "weeks").add(2, "days").format(),
   ],
   K: [
-    { x: 0, y: 0 },
-    { x: 1, y: 1 },
-    { x: 2, y: 2 },
-    { x: 3, y: 3 },
+    moment().subtract(1, "year").add(1, "day").add(7, "weeks").add(1, "days").format(),
+    moment().subtract(1, "year").add(1, "day").add(7, "weeks").add(2, "days").format(),
   ],
 };
 
-// Функция для добавления коммитов
-const markCommit = async (x, y) => {
-  const date = moment().subtract(1, "y").add(1, "d").add(x, "w").add(y, "d").format();
+const path = "./data.json";
 
+// Функция для добавления коммита
+const markCommit = (date) => {
   const data = {
     date: date,
   };
 
-  await jsonfile.writeFile(path, data); // Пишем файл с новой датой
-  await git.add([path]).commit(date, { "--date": date }).push(); // Делаем коммит
+  jsonfile.writeFile(path, data, () => {
+    simpleGit().add([path]).commit("YNTYMAK", { "--date": date }).push();
+  });
 };
 
-// Функция для создания всех коммитов
-const makeCommits = async (letters) => {
-  for (const letter of letters) {
-    for (const { x, y } of letterDates[letter]) {
-      await markCommit(x, y);
+// Функция для создания всех коммитов для "YNTYMAK"
+const makeCommits = () => {
+  console.log("Starting commit generation...");
+  // Перебираем все буквы и даты
+  for (const letter in letterDates) {
+    const dates = letterDates[letter];
+    for (const commitDate of dates) {
+      markCommit(commitDate); // Создаем коммит для каждой даты
     }
   }
-  git.push(); // Отправляем все изменения
+  console.log("Commits finished!");
 };
 
-// Запуск генерации коммитов для "YNTYMAK"
-makeCommits(["Y", "N", "T", "Y", "M", "A", "K"]);
+// Запускаем создание коммитов
+makeCommits();
