@@ -6,7 +6,7 @@ import random from "random";
 const path = "./data.json";
 
 const markCommit = (x, y) => {
-  const date = moment().subtract(2, "y").add(70, "d").add(x, "w").add(y, "d").format();
+  const date = moment().subtract(10, "y").add(100, "d").add(x, "w").add(y, "d").format();
 
   const data = {
     date: date,
