@@ -4,37 +4,73 @@ import simpleGit from "simple-git";
 import random from "random";
 
 const path = "./data.json";
+const git = simpleGit();
 
-const markCommit = (x, y) => {
-  const date = moment()
-    .subtract(1, "y")
-    .add(1, "d")
-    .add(x, "w")
-    .add(y, "d")
-    .format();
-
-  const data = {
-    date: date,
-  };
-
-  jsonfile.writeFile(path, data, () => {
-    simpleGit().add([path]).commit(date, { "--date": date }).push();
-  });
+// Буквы и их координаты (примерные дни для каждой буквы)
+const letterDates = {
+  Y: [
+    { x: 0, y: 0 },
+    { x: 1, y: 0 },
+    { x: 2, y: 1 },
+    { x: 3, y: 2 },
+    { x: 4, y: 3 },
+  ],
+  N: [
+    { x: 0, y: 0 },
+    { x: 1, y: 1 },
+    { x: 2, y: 2 },
+    { x: 3, y: 3 },
+  ],
+  T: [
+    { x: 0, y: 0 },
+    { x: 1, y: 0 },
+    { x: 2, y: 0 },
+    { x: 3, y: 1 },
+    { x: 4, y: 2 },
+  ],
+  M: [
+    { x: 0, y: 0 },
+    { x: 1, y: 1 },
+    { x: 2, y: 2 },
+    { x: 3, y: 1 },
+    { x: 4, y: 0 },
+  ],
+  A: [
+    { x: 0, y: 0 },
+    { x: 1, y: 1 },
+    { x: 2, y: 2 },
+    { x: 3, y: 1 },
+    { x: 4, y: 0 },
+  ],
+  K: [
+    { x: 0, y: 0 },
+    { x: 1, y: 1 },
+    { x: 2, y: 2 },
+    { x: 3, y: 3 },
+  ],
 };
 
-const makeCommits = (n) => {
-  if(n===0) return simpleGit().push();
-  const x = random.int(0, 54);
-  const y = random.int(0, 6);
+// Функция для добавления коммитов
+const markCommit = async (x, y) => {
   const date = moment().subtract(1, "y").add(1, "d").add(x, "w").add(y, "d").format();
 
   const data = {
     date: date,
   };
-  console.log(date);
-  jsonfile.writeFile(path, data, () => {
-    simpleGit().add([path]).commit(date, { "--date": date },makeCommits.bind(this,--n));
-  });
+
+  await jsonfile.writeFile(path, data); // Пишем файл с новой датой
+  await git.add([path]).commit(date, { "--date": date }).push(); // Делаем коммит
 };
 
-makeCommits(100);
+// Функция для создания всех коммитов
+const makeCommits = async (letters) => {
+  for (const letter of letters) {
+    for (const { x, y } of letterDates[letter]) {
+      await markCommit(x, y);
+    }
+  }
+  git.push(); // Отправляем все изменения
+};
+
+// Запуск генерации коммитов для "YNTYMAK"
+makeCommits(["Y", "N", "T", "Y", "M", "A", "K"]);
