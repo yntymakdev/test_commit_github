@@ -1,35 +1,50 @@
 import jsonfile from "jsonfile";
 import moment from "moment";
 import simpleGit from "simple-git";
-import random from "random";
+import fs from "fs";
 
 const path = "./data.json";
+const git = simpleGit();
 
-const markCommit = (x, y) => {
-  const date = moment().subtract(10, "y").add(100, "d").add(x, "w").add(y, "d").format();
+const getAprilDates = () => {
+  const dates = [];
+  const start = moment("2025-04-01");
+  const end = moment("2025-04-30");
 
-  const data = {
-    date: date,
-  };
+  while (start.isSameOrBefore(end)) {
+    dates.push(start.clone());
+    start.add(1, "day");
+  }
 
-  jsonfile.writeFile(path, data, () => {
-    simpleGit().add([path]).commit(date, { "--date": date }).push();
-  });
+  return dates;
 };
 
-const makeCommits = (n) => {
-  if (n === 0) return simpleGit().push();
-  const x = random.int(0, 54);
-  const y = random.int(0, 6);
-  const date = moment().subtract(1, "y").add(1, "d").add(x, "w").add(y, "d").format();
+const commitApril = async () => {
+  console.log("🚀 Генерация 70 коммитов за каждый день апреля 2025...");
 
-  const data = {
-    date: date,
-  };
-  console.log(date);
-  jsonfile.writeFile(path, data, () => {
-    simpleGit().add([path]).commit(date, { "--date": date }, makeCommits.bind(this, --n));
-  });
+  const dates = getAprilDates();
+
+  for (let date of dates) {
+    for (let j = 0; j < 70; j++) {
+      const commitDate = date
+        .clone()
+        .hour(12)
+        .minute(Math.floor(j / 60))
+        .second(j % 60)
+        .format();
+
+      const data = { date: commitDate };
+      fs.writeFileSync(path, JSON.stringify(data));
+
+      await git.add([path]);
+      await git.commit("YNTYMAK", { "--date": commitDate });
+    }
+
+    console.log(`✅ Готово: ${date.format("YYYY-MM-DD")}`);
+  }
+
+  await git.push();
+  console.log("🎉 Все 30 дней апреля с 70 коммитами каждый — успешно отправлены!");
 };
 
-makeCommits(100);
+commitApril();
